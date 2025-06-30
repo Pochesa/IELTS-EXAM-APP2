@@ -20,8 +20,8 @@ export default function LoginPage() {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      email: '',
-      password: '',
+      email: 'test@example.com',
+      password: 'password',
     },
   });
 
@@ -48,7 +48,7 @@ export default function LoginPage() {
                   <FormItem className="grid gap-2">
                     <FormLabel>Email</FormLabel>
                     <FormControl>
-                      <Input type="email" placeholder="m@example.com" {...field} />
+                      <Input type="email" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
