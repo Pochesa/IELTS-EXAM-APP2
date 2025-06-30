@@ -6,8 +6,10 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
-import { Check, X } from 'lucide-react';
+import { Check, X, Loader2 } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { generateConversation } from '@/ai/flows/generate-conversation';
+import { useToast } from '@/hooks/use-toast';
 
 const questions = [
   { id: 'q1', question: 'What is the main topic of the conversation?', options: ['University life', 'Booking a hotel', 'Planning a trip', 'A new job'], answer: 'Planning a trip' },
@@ -18,7 +20,31 @@ const questions = [
 export default function ListeningPage() {
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [submitted, setSubmitted] = useState(false);
+  const [audioSrc, setAudioSrc] = useState<string | null>(null);
+  const [isGenerating, setIsGenerating] = useState(true);
   const audioRef = useRef<HTMLAudioElement>(null);
+  const { toast } = useToast();
+
+  useEffect(() => {
+    const getAudio = async () => {
+      setIsGenerating(true);
+      try {
+        const result = await generateConversation();
+        setAudioSrc(result.audioDataUri);
+      } catch (error) {
+        console.error("Error generating conversation audio:", error);
+        toast({
+          variant: "destructive",
+          title: "Failed to generate audio",
+          description: "There was a problem creating the listening exercise. Please try again later.",
+        });
+      } finally {
+        setIsGenerating(false);
+      }
+    };
+
+    getAudio();
+  }, [toast]);
 
   useEffect(() => {
     const audio = audioRef.current;
@@ -62,10 +88,18 @@ export default function ListeningPage() {
             <CardDescription>Listen to the conversation carefully.</CardDescription>
           </CardHeader>
           <CardContent>
-            <audio controls className="w-full" ref={audioRef}>
-              <source src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" type="audio/mpeg" />
-              Your browser does not support the audio element.
-            </audio>
+            {isGenerating ? (
+              <div className="flex items-center justify-center h-20">
+                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                <p className="ml-4 text-muted-foreground">Generating conversation...</p>
+              </div>
+            ) : (
+              audioSrc && (
+                <audio controls className="w-full" ref={audioRef} src={audioSrc}>
+                  Your browser does not support the audio element.
+                </audio>
+              )
+            )}
           </CardContent>
         </Card>
         <Card>
@@ -78,6 +112,7 @@ export default function ListeningPage() {
               <div key={q.id}>
                 <Label className="font-semibold">{q.question}</Label>
                 <RadioGroup
+                  disabled={isGenerating || !audioSrc}
                   value={answers[q.id]}
                   onValueChange={(value) => handleValueChange(q.id, value)}
                   className="mt-2 space-y-2"
@@ -104,7 +139,7 @@ export default function ListeningPage() {
                 </RadioGroup>
               </div>
             ))}
-            <Button onClick={handleSubmit} className="w-full">Check Answers</Button>
+            <Button onClick={handleSubmit} className="w-full" disabled={isGenerating || !audioSrc}>Check Answers</Button>
             {submitted && (
               <Alert>
                 <AlertTitle>Results</AlertTitle>
