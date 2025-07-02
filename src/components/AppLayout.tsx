@@ -1,4 +1,3 @@
-
 'use client';
 
 import Link from 'next/link';
@@ -13,7 +12,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import { Sheet, SheetContent, SheetDescription, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
 import { Logo } from '@/components/Logo';
 
@@ -79,6 +78,8 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
               </Button>
             </SheetTrigger>
             <SheetContent side="left" className="flex flex-col">
+              <SheetTitle className="sr-only">Navigation Menu</SheetTitle>
+              <SheetDescription className="sr-only">A list of links to navigate the application.</SheetDescription>
               <nav className="grid gap-2 text-lg font-medium">
                 <Link href="/dashboard" className="flex items-center gap-2 text-lg font-semibold font-headline mb-4">
                   <Logo className="h-6 w-6 text-primary" />
